@@ -26,7 +26,7 @@ jobs:
       #默认密码，仅作展示，更改无效
       OWRT_PW: password
       #默认地址
-      OWRT_IP: 192.168.1.110
+      OWRT_IP: 192.168.2.2
       #默认源码
       OWRT_URL: https://github.com/immortalwrt/immortalwrt
       #源码版本
@@ -35,7 +35,7 @@ jobs:
       OWRT_CFG: arm7.config
       #设备类型
       OWRT_TYPE: OneCloud-ALL
-      OWRT_LINUX: 6.1.62
+      OWRT_LINUX: 6.6
       OWRT_FILES: onecloud/files
       DIY_P1_SH: immortalwrt.sh
       DIY_P2_SH: lean2.sh
