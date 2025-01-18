@@ -1,5 +1,6 @@
 #!/bin/bash
-             
+
+sed -i '/LUCI_EXTRA_DEPENDS/d' feeds/kenzo/luci-lib-taskd/Makefile
 ##配置ip等
 #sed -i 's/192.168.1.1/192.168.1.110/g' package/base-files/files/bin/config_generate
 #修改默认IP地址
