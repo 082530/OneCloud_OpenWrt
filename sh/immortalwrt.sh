@@ -68,6 +68,7 @@ git clone --depth=1 https://github.com/immortalwrt/homeproxy package/homeproxy
 git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall-packages package/openwrt-passwall
 git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
 git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
+git clone https://github.com/chenmozhijin/turboacc.git package/luci-app-turboacc
 merge_package master https://github.com/immortalwrt/luci/ package applications/luci-app-openclash
 git_sparse_clone main https://github.com/kiddin9/kwrt-packages luci-app-bypass
 #######################################################################################
