@@ -306,7 +306,62 @@ jobs:
           make -j$(nproc) || make -j1 || make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV 
-
+      - name: 制作直刷包
+        run: |
+            $GITHUB_WORKSPACE/sh/convert2.sh
+          
+      - name: 整理固件
+        id: organize
+        run: |
+          cd openwrt
+          mkdir outfile
+          cp -rf bin/targets/*/*/*.tar ./outfile
+          cp -rf bin/targets/*/*/*.xz ./outfile
+          cp -rf .config ./outfile/config.txt
+          rm -rf bin/targets/*/*/packages
+          
+          cd outfile
+          
+          if [[ $REPO_URL == *"immortalwrt"* ]]; then
+            gzip *.tar
+          fi
+          
+          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+          echo "::set-output name=status::success"
+          
+          #信息
+          export OWRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d_%H.%M.%S")
+          export OWRT_SOURCE=$(echo $REPO_URL | cut -d '/' -f 5-)
+          echo "OWRT_SOURCE=$OWRT_SOURCE" >> $GITHUB_ENV
+          echo "OWRT_DATE=$OWRT_DATE" >> $GITHUB_ENV
+  
+      - name: 上传直刷固件
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: OpenWrt_${{ env.OWRT_SOURCE }}_${{ env.OWRT_DATE }}
+          body: |
+            自用玩客云一站式直刷固件[${{ matrix.brun_type }}]！
+            请使用双USB公头线刷机！
+            ==========🧊 基本信息 🧊==========
+            💻 固件源码： ${{env.OWRT_SOURCE}}
+            💝 源码分支： ${{ env.OWRT_BRANCH }}
+            🔑 默认密码： password
+            🌐 默认地址： ${{env.OWRT_IP}}
+          artifacts: ${{ env.FIRMWARE }}/*
+  
+      - name: 清理Releases
+        uses: rmoyulong/delete-older-releases@master
+        with:
+          keep_latest: 10
+          delete_tags: true
+  
+      - name: 清理Workflows
+        uses: rmoyulong/delete-workflow-runs@main
+        with:
+          retain_days: 0
+          keep_minimum_runs: 1
       #- name: 上传 bin 目录
         #uses: actions/upload-artifact@main
         #with:
@@ -339,92 +394,94 @@ jobs:
           #fi
           
           #cp -a openwrt/.config ./ARM_Out/config.txt
+
+        
+      # - name: 整理固件
+      #   id: organize
+      #   run: |
+      #     cd openwrt
+      #     cp -rf .config ./bin/targets/meson/meson8b/config.txt
+      #     cd bin/targets/meson/meson8b
+      #     rm -rf ./packages          
           
-      - name: 整理固件
-        id: organize
-        run: |
-          cd openwrt
-          cp -rf .config ./bin/targets/meson/meson8b/config.txt
-          cd bin/targets/meson/meson8b
-          rm -rf ./packages          
+      #     if [[ $REPO_URL == *"immortalwrt"* ]]; then
+      #       gzip *.tar
+      #     fi
           
-          if [[ $REPO_URL == *"immortalwrt"* ]]; then
-            gzip *.tar
-          fi
+      #     #获得当前目录的路径信息
+      #     echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+      #     echo "::set-output name=status::success"
           
-          #获得当前目录的路径信息
-          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-          echo "::set-output name=status::success"
-          
-          #信息
-          export OWRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d_%H.%M.%S")
-          export OWRT_SOURCE=$(echo ${{inputs.OWRT_URL}} | cut -d '/' -f 5-)
-          echo "OWRT_SOURCE=$OWRT_SOURCE" >> $GITHUB_ENV
-          echo "OWRT_DATE=$OWRT_DATE" >> $GITHUB_ENV
+      #     #信息
+      #     export OWRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d_%H.%M.%S")
+      #     export OWRT_SOURCE=$(echo ${{inputs.OWRT_URL}} | cut -d '/' -f 5-)
+      #     echo "OWRT_SOURCE=$OWRT_SOURCE" >> $GITHUB_ENV
+      #     echo "OWRT_DATE=$OWRT_DATE" >> $GITHUB_ENV
 
 
-      - name: 生成标记和标签
-        id: generate_name
-        run: |
-          time=$(date +%Y%m%d%H%M%S)
-          release_tag="$time"
-          release_name="meson8b-$(date +%Y%m%d)"
-          echo "release_name=$release_name" >> $GITHUB_OUTPUT
-          echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
-          if [[ $OWRT_CFG == *"arm7_mini.config"* ]]; then
-            echo "OWRT_TYPE=[正常版]" >> $GITHUB_ENV
-          elif [[ $OWRT_CFG == *"tiny.config"* ]]; then
-            echo "OWRT_TYPE=[hub docker迷你]" >> $GITHUB_ENV
-            echo "OWRT_TAGS=Mini" >> $GITHUB_ENV
-          elif [[ $OWRT_CFG == *"arm7.config"* ]]; then
-            echo "OWRT_TYPE=[全版]" >> $GITHUB_ENV            
-          else
-            echo "OWRT_TYPE=[hub docker最新]" >> $GITHUB_ENV
-            echo "OWRT_TAGS=Latest" >> $GITHUB_ENV
-          fi
+      # - name: 生成标记和标签
+      #   id: generate_name
+      #   run: |
+      #     time=$(date +%Y%m%d%H%M%S)
+      #     release_tag="$time"
+      #     release_name="meson8b-$(date +%Y%m%d)"
+      #     echo "release_name=$release_name" >> $GITHUB_OUTPUT
+      #     echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
+      #     if [[ $OWRT_CFG == *"arm7_mini.config"* ]]; then
+      #       echo "OWRT_TYPE=[正常版]" >> $GITHUB_ENV
+      #     elif [[ $OWRT_CFG == *"tiny.config"* ]]; then
+      #       echo "OWRT_TYPE=[hub docker迷你]" >> $GITHUB_ENV
+      #       echo "OWRT_TAGS=Mini" >> $GITHUB_ENV
+      #     elif [[ $OWRT_CFG == *"arm7.config"* ]]; then
+      #       echo "OWRT_TYPE=[全版]" >> $GITHUB_ENV            
+      #     else
+      #       echo "OWRT_TYPE=[hub docker最新]" >> $GITHUB_ENV
+      #       echo "OWRT_TAGS=Latest" >> $GITHUB_ENV
+      #     fi
           
-      - name: 上传IMAGES[卡刷版或直刷版]
-        uses: ncipollo/release-action@v1
-        if: env.OWRT_DOCKER == 'false'
-        with:
-          allowUpdates: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: OpenWrt_${{ env.OWRT_SOURCE }}_${{ env.OWRT_DATE }}
-          body: |
-            玩客云${{ env.OWRT_TYPE }}[meson6.6]卡刷包！
-            请使用rufus写盘启动！
-            ==========🧊 基本信息 🧊==========
-            💻 固件源码： ${{env.OWRT_SOURCE}}
-            💝 源码分支： ${{env.REPO_BRANCH}}
-            🔑 默认密码： password
-            🌐 默认地址： ${{env.OWRT_IP}}
-          artifacts: ${{ env.FIRMWARE }}/*
+      # - name: 上传IMAGES[卡刷版或直刷版]
+      #   uses: ncipollo/release-action@v1
+      #   if: env.OWRT_DOCKER == 'false'
+      #   with:
+      #     allowUpdates: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     tag: OpenWrt_${{ env.OWRT_SOURCE }}_${{ env.OWRT_DATE }}
+      #     body: |
+      #       玩客云${{ env.OWRT_TYPE }}[meson6.6]卡刷包！
+      #       请使用rufus写盘启动！
+      #       ==========🧊 基本信息 🧊==========
+      #       💻 固件源码： ${{env.OWRT_SOURCE}}
+      #       💝 源码分支： ${{env.REPO_BRANCH}}
+      #       🔑 默认密码： password
+      #       🌐 默认地址： ${{env.OWRT_IP}}
+      #     artifacts: ${{ env.FIRMWARE }}/*
 
-      - name: 上传IMAGES[Hub Docker版]
-        uses: ncipollo/release-action@v1
-        if: env.OWRT_DOCKER == 'true'
-        with:
-          allowUpdates: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: Docker_${{ env.OWRT_TAGS }}
-          body: |
-            玩客云${{ env.OWRT_TYPE }}[meson6.6]卡刷包！
-            请使用rufus写盘启动！
-            ==========🧊 基本信息 🧊==========
-            💻 固件源码： ${{env.OWRT_SOURCE}}
-            💝 源码分支： ${{env.REPO_BRANCH}}
-            🔑 默认密码： password
-            🌐 默认地址： ${{env.OWRT_IP}}
-          artifacts: ${{ env.FIRMWARE }}/*
+      # - name: 上传IMAGES[Hub Docker版]
+      #   uses: ncipollo/release-action@v1
+      #   if: env.OWRT_DOCKER == 'true'
+      #   with:
+      #     allowUpdates: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     tag: Docker_${{ env.OWRT_TAGS }}
+      #     body: |
+      #       玩客云${{ env.OWRT_TYPE }}[meson6.6]卡刷包！
+      #       请使用rufus写盘启动！
+      #       ==========🧊 基本信息 🧊==========
+      #       💻 固件源码： ${{env.OWRT_SOURCE}}
+      #       💝 源码分支： ${{env.REPO_BRANCH}}
+      #       🔑 默认密码： password
+      #       🌐 默认地址： ${{env.OWRT_IP}}
+      #     artifacts: ${{ env.FIRMWARE }}/*
             
-      - name: 清理Releases
-        uses: rmoyulong/delete-older-releases@master
-        with:
-          keep_latest: 12
-          delete_tags: true
+      # - name: 清理Releases
+      #   uses: rmoyulong/delete-older-releases@master
+      #   with:
+      #     keep_latest: 12
+      #     delete_tags: true
 
-      - name: 清理Workflows
-        uses: rmoyulong/delete-workflow-runs@main
-        with:
-          retain_days: 0
-          keep_minimum_runs: 1
+      # - name: 清理Workflows
+      #   uses: rmoyulong/delete-workflow-runs@main
+      #   with:
+      #     retain_days: 0
+      #     keep_minimum_runs: 1
+    
