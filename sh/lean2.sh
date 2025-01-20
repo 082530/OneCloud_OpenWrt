@@ -2,6 +2,8 @@
 
 sed -i '/LUCI_EXTRA_DEPENDS/d' feeds/kenzo/luci-lib-taskd/Makefile
 sed -i 's/PKG_VERSION:=0\.1\.27-3/PKG_VERSION:=0.1.27/' feeds/kenzo/luci-app-store/Makefile
+sed -i 's/PKG_RELEASE:=1/PKG_RELEASE:=/g' feeds/kenzo/luci-app-quickstart/Makefile
+
 ##配置ip等
 #sed -i 's/192.168.1.1/192.168.1.110/g' package/base-files/files/bin/config_generate
 #修改默认IP地址
