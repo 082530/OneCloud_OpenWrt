@@ -71,6 +71,7 @@ git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall2 package/luci-
 git clone https://github.com/chenmozhijin/turboacc.git package/luci-app-turboacc
 merge_package master https://github.com/immortalwrt/luci/ package applications/luci-app-openclash
 git_sparse_clone main https://github.com/kiddin9/kwrt-packages luci-app-bypass
+sed -i '/else ifeq ($(ARCH_PREBUILT),arm_cortex-a15_neon-vfpv4)/a\else ifeq ($(ARCH_PACKAGES),arm_cortex-a5_neon-vfpv4)\n  ARCH_PREBUILT:=arm_cortex-a5' package/openwrt-passwall/naiveproxy/Makefile
 #######################################################################################
 git_sparse_clone main https://github.com/kiddin9/kwrt-packages dnsforwarder
 git_sparse_clone master https://github.com/rmoyulong/AX6-Actions_Lede pcre
