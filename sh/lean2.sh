@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sed -i '/LUCI_EXTRA_DEPENDS/d' feeds/kenzo/luci-lib-taskd/Makefile
-sed -i 's/PKG_VERSION:=0\.1\.27-3/PKG_VERSION:=0.1.27/' feeds/kenzo/luci-app-store/Makefile
+sed -i 's/PKG_VERSION:=0\.1\.27-4/PKG_VERSION:=0.1.27/' feeds/kenzo/luci-app-store/Makefile
 sed -i 's/PKG_RELEASE:=1/PKG_RELEASE:=/g' feeds/kenzo/luci-app-quickstart/Makefile
 sed -i 's/PKG_VERSION:=0.8.16-1/PKG_VERSION:=0.8.16/' /workdir/openwrt/feeds/kenzo/luci-app-quickstart/Makefile
 sed -i 's/PKG_SOURCE:=.*/PKG_SOURCE:=naiveproxy-v132.0.6834.79-2-openwrt-arm_cortex-a5_vfpv4.tar.xz/' package/openwrt-passwall/naiveproxy/Makefile
